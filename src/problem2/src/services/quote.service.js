@@ -1,12 +1,4 @@
-const PRICES_URL = 'https://interview.switcheo.com/prices.json';
-const SIMULATED_LATENCY = 1200;
-
-export const currencies = [
-  'ATOM', 'axlUSDC', 'BLUR', 'bNEO', 'BUSD', 'ETH', 'EVMOS', 'GMX', 'IBCX',
-  'IRIS', 'KUJI', 'LSI', 'LUNA', 'OKB', 'OKT', 'OSMO', 'RATOM', 'rSWTH',
-  'STATOM', 'STEVMOS', 'STLUNA', 'STOSMO', 'STRD', 'SWTH', 'USC', 'USD',
-  'USDC', 'WBTC', 'wstETH', 'YieldUSD', 'ZIL',
-];
+import { PRICES_URL, SIMULATED_LATENCY } from '../utils/constants';
 
 const wait = (milliseconds, signal) =>
   new Promise((resolve, reject) => {
@@ -22,7 +14,12 @@ const wait = (milliseconds, signal) =>
     );
   });
 
-export const requestSwapQuote = async ({ amount, fromCurrency, toCurrency, signal }) => {
+export const requestSwapQuote = async ({
+  amount,
+  fromCurrency,
+  toCurrency,
+  signal,
+}) => {
   await wait(SIMULATED_LATENCY, signal);
 
   const response = await fetch(PRICES_URL, { signal });
@@ -30,7 +27,8 @@ export const requestSwapQuote = async ({ amount, fromCurrency, toCurrency, signa
 
   const prices = await response.json();
   const selectedPrices = prices.reduce((result, item) => {
-    if (item.currency !== fromCurrency && item.currency !== toCurrency) return result;
+    if (item.currency !== fromCurrency && item.currency !== toCurrency)
+      return result;
 
     const current = result[item.currency];
     if (!current || new Date(item.date) >= new Date(current.date)) {
@@ -42,7 +40,8 @@ export const requestSwapQuote = async ({ amount, fromCurrency, toCurrency, signa
 
   const fromPrice = selectedPrices[fromCurrency]?.price;
   const toPrice = selectedPrices[toCurrency]?.price;
-  if (!fromPrice || !toPrice) throw new Error('A selected currency is unavailable');
+  if (!fromPrice || !toPrice)
+    throw new Error('A selected currency is unavailable');
 
   const rate = fromPrice / toPrice;
   return { amount: amount * rate, rate };
